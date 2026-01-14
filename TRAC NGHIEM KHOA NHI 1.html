@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ôn Tập Điều Dưỡng Nhi 2 - Trắc Nghiệm</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f4f7f6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            max-width: 800px;
+            width: 100%;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 { text-align: center; color: var(--primary-color); }
+        .quiz-info { text-align: center; margin-bottom: 20px; font-style: italic; }
+
+        #quiz-box { margin-bottom: 20px; }
+        .question { font-size: 1.2rem; font-weight: bold; margin-bottom: 15px; }
+        .options { display: flex; flex-direction: column; gap: 10px; }
+
+        .option-btn {
+            padding: 12px 20px;
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+        .option-btn:hover { background: #f0f7ff; border-color: var(--secondary-color); }
+        .option-btn.selected { background: var(--secondary-color); color: white; border-color: var(--secondary-color); }
+
+        .controls { display: flex; justify-content: space-between; margin-top: 25px; }
+        button#next-btn, button#submit-btn, button#restart-btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+        }
+        #next-btn { background: var(--secondary-color); }
+        #submit-btn { background: var(--success-color); }
+        #restart-btn { background: var(--primary-color); width: 100%; margin-top: 20px; }
+
+        #result-area { display: none; }
+        .score-circle {
+            width: 120px; height: 120px; border-radius: 50%;
+            background: var(--secondary-color); color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; font-weight: bold; margin: 20px auto;
+        }
+        .advice { background: #e8f4fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; line-height: 1.6; }
+        .wrong-summary { border-top: 2px solid #eee; padding-top: 20px; }
+        .wrong-item { margin-bottom: 15px; padding: 10px; border-left: 4px solid var(--error-color); background: #fff5f5; }
+        .correct-ans { color: var(--success-color); font-weight: bold; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="intro-screen">
+        <h1>Trắc Nghiệm Điều Dưỡng Nhi 2</h1>
+        <p class="quiz-info">Tài liệu ôn tập: Nhi-2-chốt (40 câu hỏi)</p>
+        <div class="advice">
+            <strong>Hướng dẫn:</strong> Chọn đáp án đúng nhất cho mỗi câu hỏi. Sau khi hoàn thành, bạn sẽ nhận được điểm số, lời khuyên và danh sách các câu làm sai để ôn tập lại.
+        </div>
+        <button id="next-btn" style="width:100%" onclick="startQuiz()">Bắt đầu làm bài</button>
+    </div>
+
+    <div id="quiz-area" class="hidden">
+        <div id="progress">Câu hỏi 1/40</div>
+        <div id="quiz-box">
+            <div id="question-text" class="question"></div>
+            <div id="options-container" class="options"></div>
+        </div>
+        <div class="controls">
+            <div></div>
+            <button id="next-btn" onclick="nextQuestion()">Câu tiếp theo &rarr;</button>
+        </div>
+    </div>
+
+    <div id="result-area">
+        <h1>Kết quả bài làm</h1>
+        <div id="score-display" class="score-circle">0/40</div>
+        <div id="feedback-text" style="text-align: center; font-weight: bold; font-size: 1.2rem;"></div>
+        <div id="advice-text" class="advice"></div>
+        
+        <div class="wrong-summary">
+            <h3>Nội dung cần lưu ý (Các câu làm sai):</h3>
+            <div id="wrong-answers-list"></div>
+        </div>
+        
+        <button id="restart-btn" onclick="location.reload()">Làm lại bài thi</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        { q: "Vàng da ở trẻ sơ sinh là do có sự gia tăng của:", options: ["Sắc tố mật", "Tiền vitamin D", "Bilirubin > 7mg%", "Tiền chất vitamin A"], correct: 2 },
+        { q: "Biến dưỡng của Bilirubin trong bào thai diễn ra tại:", options: ["Gan của thai", "Gan của mẹ và con", "Huyết thanh bào thai", "Nhau thai"], correct: 1 },
+        { q: "Vàng da sinh lý ở trẻ đủ tháng thường xuất hiện vào thời điểm nào?", options: ["Trong 24 giờ đầu", "Ngày thứ 2-3 sau sinh", "Ngày thứ 7-10 sau sinh", "Sau 15 ngày"], correct: 1 },
+        { q: "Vàng da sinh lý chứng tỏ điều gì ở trẻ sơ sinh?", options: ["Trẻ quá non tháng", "Trẻ nhẹ cân", "Men Glucuronyl transferase không đủ", "Hệ tiêu hóa kém"], correct: 2 },
+        { q: "Vàng da nhân là biến chứng nguy hiểm nhất xảy ra trong vòng bao nhiêu ngày đầu?", options: ["7 ngày", "10 ngày", "15 ngày", "30 ngày"], correct: 2 },
+        { q: "Phương pháp điều trị vàng da do tăng bilirubin gián tiếp KHÔNG bao gồm:", options: ["Chiếu đèn", "Thay máu", "Truyền tĩnh mạch đường glucose", "Truyền tĩnh mạch Albumin"], correct: 2 },
+        { q: "Bệnh lý nào sau đây gây gia tăng Bilirubin trực tiếp?", options: ["Nhiễm trùng huyết", "Sinh non", "Bệnh lý gan mật", "Xuất huyết não"], correct: 2 },
+        { q: "Chăm sóc trẻ chiếu đèn cần lưu ý điều gì KHÔNG nên làm?", options: ["Che mắt trẻ", "Xoay trở mỗi 2 giờ", "Cởi hết áo tã cho tất cả trẻ", "Thực hiện thủ thuật khi đang chiếu đèn"], correct: 3 },
+        { q: "Dấu hiệu nào sau đây KHÔNG phải của vàng da nhân?", options: ["Trẻ li bì", "Bỏ bú", "Da màu đồng", "Hay quấy khóc"], correct: 2 },
+        { q: "Sứt môi đơn thuần thường được phẫu thuật vá môi khi trẻ được:", options: ["2 - 3 tháng", "3 - 6 tháng", "6 - 8 tháng", "8 - 10 tháng"], correct: 1 },
+        { q: "Hở hàm ếch thường được phẫu thuật khi trẻ được:", options: ["8 - 10 tháng", "12 - 18 tháng", "18 - 24 tháng", "24 - 30 tháng"], correct: 2 },
+        { q: "Đặc điểm của teo ruột non bao gồm các dấu hiệu sau, NGOẠI TRỪ:", options: ["Nôn ra dịch mật", "Bụng chướng", "Bụng xẹp, tiêu phân su", "Không tiêu phân su"], correct: 2 },
+        { q: "Vi khuẩn thường gặp nhất gây nhiễm khuẩn sơ sinh là:", options: ["Trực khuẩn mủ xanh", "Liên cầu khuẩn nhóm B", "Klebsiella", "Nấm"], correct: 1 },
+        { q: "Trong thủ thuật vỗ lưng - ấn ngực cấp cứu sặc sữa, mỗi đợt vỗ lưng thực hiện bao nhiêu cái?", options: ["2", "3", "5", "7"], correct: 2 },
+        { q: "Khoảng cách thích hợp từ bóng đèn chiếu đến bệnh nhi vàng da là:", options: ["20 - 30cm", "30 - 40cm", "50 - 60cm", "60 - 80cm"], correct: 1 },
+        { q: "Vàng da nhân xảy ra khi lượng Bilirubin gián tiếp tăng cao trên:", options: ["> 10 mg%", "> 15 mg%", "> 20 mg%", "> 25 mg%"], correct: 2 },
+        { q: "Vị trí ấn ngực trong thủ thuật cấp cứu sặc sữa là dưới đường liên vú khoảng:", options: ["1 khoát ngón tay", "2 khoát ngón tay", "3 khoát ngón tay", "4 khoát ngón tay"], correct: 0 },
+        { q: "Thủ thuật Heimlich thường được thực hiện ở lứa tuổi nào?", options: ["Sơ sinh", "Nhũ nhi", "Trẻ lớn > 1 tuổi", "Tất cả mọi lứa tuổi"], correct: 2 },
+        { q: "Loại vaccine nào cần tiêm cho thai phụ để ngừa uốn ván sơ sinh?", options: ["DTC", "VAT", "SAT", "SAD"], correct: 1 },
+        { q: "Độ ẩm trong lồng ấp thường được cài đặt ở mức:", options: ["40%", "50%", "60%", "70%"], correct: 2 },
+        { q: "Cơ chế bệnh sinh của phình đại tràng bẩm sinh là do:", options: ["Tắc ruột cơ năng", "Vô hạch đoạn cuối ruột già", "Bón lâu ngày", "Nhu động ruột quá mạnh"], correct: 1 },
+        { q: "Hiện tượng 'tháo cống' khi thụt tháo là đặc trưng của bệnh lý nào?", options: ["Tắc ruột", "Teo trực tràng", "Phình đại tràng bẩm sinh", "Viêm đại tràng"], correct: 2 },
+        { q: "Dấu hiệu sớm nhất của phình đại tràng bẩm sinh là:", options: ["Nôn mửa", "Chậm đào thải phân su", "Tiêu chảy", "Bụng xẹp"], correct: 1 },
+        { q: "Ánh sáng hiệu quả nhất để điều trị vàng da nặng là:", options: ["Ánh sáng trắng", "Ánh sáng xanh lá", "Ánh sáng tím", "Ánh sáng xanh dương"], correct: 3 },
+        { q: "Chất gây (lớp lipid bảo vệ da) không nên lau sạch trong vòng bao nhiêu giờ đầu?", options: ["12 giờ", "24 giờ", "48 giờ", "72 giờ"], correct: 1 },
+        { q: "Theo quy luật Kramer, nếu trẻ vàng da đến bụng (vùng 2) thì Bilirubin khoảng:", options: ["5-7 mg%", "8-10 mg%", "11-13 mg%", "16-19 mg%"], correct: 1 },
+        { q: "Trẻ sơ sinh bị uốn ván rốn nên chăm sóc rốn bằng dung dịch:", options: ["Oxy già", "Betadin pha loãng", "Nước muối sinh lý", "Thuốc tím"], correct: 1 },
+        { q: "Dấu hiệu sớm của uốn ván sơ sinh thường là:", options: ["Co giật", "Cứng hàm", "Bỏ bú", "Sốt cao"], correct: 2 },
+        { q: "Điều trị dị vật đường thở tốt nhất bằng phương pháp:", options: ["Mở khí quản", "Nội soi gắp dị vật", "Thở oxy", "Vỗ lưng"], correct: 1 },
+        { q: "Sensor đo thân nhiệt trẻ trong lồng ấp thường gắn ở vị trí nào?", options: ["Trán", "Ngực", "Vùng thượng vị", "Đùi"], correct: 2 },
+        { q: "Khi chiếu đèn, cần tăng lượng dịch cung cấp cho trẻ bao nhiêu % để bù mất nước?", options: ["5-10%", "10-20%", "20-30%", "30-40%"], correct: 1 },
+        { q: "Vàng da do sữa mẹ thường giảm dần sau bao lâu?", options: ["1-2 tuần", "4-6 tuần", "10-12 tuần", "3-5 ngày"], correct: 1 },
+        { q: "Dấu hiệu của teo môn vị bẩm sinh là:", options: ["Nôn ra dịch mật", "Nôn sớm, không lẫn mật", "Không nôn", "Tiêu chảy"], correct: 1 },
+        { q: "Thoát vị hoành bẩm sinh là các tạng chui lên ngực qua lỗ:", options: ["Bochdaleck", "Botal", "Lỗ rốn", "Ống phúc tinh mạc"], correct: 0 },
+        { q: "Tư thế nằm tốt nhất cho trẻ thoát vị hoành là:", options: ["Nằm sấp", "Nằm đầu cao nghiêng về bên thoát vị", "Nằm đầu cao nghiêng đối diện bên thoát vị", "Nằm ngửa đầu thấp"], correct: 1 },
+        { q: "Thời gian thay ống thông dạ dày cho trẻ ăn là mỗi:", options: ["1 ngày", "2 ngày", "3 ngày", "5 ngày"], correct: 2 },
+        { q: "Nếu dịch dạ dày còn tồn đọng >30% thể tích cữ ăn trước, điều dưỡng cần:", options: ["Bơm bỏ dịch dư", "Tiếp tục cho ăn bình thường", "Bơm lượng dịch dư vào và giảm lượng sữa cữ mới", "Ngưng ăn hoàn toàn"], correct: 2 },
+        { q: "Phòng ngừa hít sặc khi cho ăn qua ống thông bằng cách đặt trẻ nằm đầu cao sau ăn:", options: ["15 phút", "30-60 phút", "2 giờ", "Không cần nằm đầu cao"], correct: 1 },
+        { q: "Nhiệt độ lồng ấp cho trẻ 2000g - 2500g trong ngày đầu thường là:", options: ["32 độ C", "33 độ C", "34 độ C", "36 độ C"], correct: 2 },
+        { q: "Biến chứng 'Da màu đồng' thường gặp khi nào?", options: ["Thay máu", "Chiếu đèn cho trẻ tăng bilirubin trực tiếp", "Uốn ván rốn", "Sặc sữa"], correct: 1 }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let userAnswers = [];
+
+    function startQuiz() {
+        document.getElementById('intro-screen').classList.add('hidden');
+        document.getElementById('quiz-area').classList.remove('hidden');
+        showQuestion();
+    }
+
+    function showQuestion() {
+        const q = questions[currentQuestion];
+        document.getElementById('progress').innerText = `Câu hỏi ${currentQuestion + 1}/${questions.length}`;
+        document.getElementById('question-text').innerText = q.q;
+        
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+        
+        q.options.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => selectOption(index);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function selectOption(index) {
+        const buttons = document.querySelectorAll('.option-btn');
+        buttons.forEach(b => b.classList.remove('selected'));
+        buttons[index].classList.add('selected');
+        userAnswers[currentQuestion] = index;
+    }
+
+    function nextQuestion() {
+        if (userAnswers[currentQuestion] === undefined) {
+            alert("Vui lòng chọn một đáp án!");
+            return;
+        }
+
+        if (currentQuestion < questions.length - 1) {
+            currentQuestion++;
+            showQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    function showResult() {
+        document.getElementById('quiz-area').classList.add('hidden');
+        document.getElementById('result-area').style.display = 'block';
+
+        score = 0;
+        const wrongList = document.getElementById('wrong-answers-list');
+        wrongList.innerHTML = '';
+
+        questions.forEach((q, i) => {
+            if (userAnswers[i] === q.correct) {
+                score++;
+            } else {
+                const item = document.createElement('div');
+                item.className = 'wrong-item';
+                item.innerHTML = `
+                    <strong>Câu ${i+1}: ${q.q}</strong><br>
+                    - Bạn chọn: <span style="color:red">${userAnswers[i] !== undefined ? q.options[userAnswers[i]] : 'Bỏ trống'}</span><br>
+                    - Đáp án đúng: <span class="correct-ans">${q.options[q.correct]}</span>
+                `;
+                wrongList.appendChild(item);
+            }
+        });
+
+        const finalScore = Math.round((score / questions.length) * 10);
+        document.getElementById('score-display').innerText = `${score}/${questions.length}`;
+        
+        let feedback = "";
+        let advice = "";
+
+        if (finalScore >= 8) {
+            feedback = "Rất tốt! Bạn đã nắm vững kiến thức Nhi 2.";
+            advice = "Lời khuyên: Bạn đã sẵn sàng cho kỳ thi. Hãy đọc kỹ lại các chỉ số Bilirubin theo cân nặng để đạt điểm tuyệt đối.";
+        } else if (finalScore >= 5) {
+            feedback = "Khá! Bạn cần ôn tập thêm một chút.";
+            advice = "Lời khuyên: Tập trung xem lại phần xử trí teo thực quản, phình đại tràng và các tai biến khi chiếu đèn.";
+        } else {
+            feedback = "Cần cố gắng nhiều hơn!";
+            advice = "Lời khuyên: Bạn nên đọc lại tài liệu 'Nhi-2-chốt' từ đầu, đặc biệt là các dấu hiệu lâm sàng và quy trình chăm sóc điều dưỡng.";
+        }
+
+        document.getElementById('feedback-text').innerText = feedback;
+        document.getElementById('advice-text').innerText = advice;
+    }
+</script>
+
+</body>
+</html>
